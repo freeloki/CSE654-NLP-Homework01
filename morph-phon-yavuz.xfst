@@ -1,0 +1,148 @@
+
+!
+! This file only contains a set of useful definitions. This is sourced
+! from the other scripts that generate useful automata.
+!
+
+!
+! Define some useful character classes
+!
+
+! Vowels
+define Vf   e | i | ö | ü | E | İ | Ö | Ü | î | Î | %^sFRV | %^sFUV;
+define Vb   a | ı | o | u | A | I | O | U | â | Â | û | Û | %^sBRV | %^sBUV;
+define Vh   i | ü | ı | u | İ | Ü | I | U | î | Î | û | Û | %^si | %^sü | %^sı | %^su;
+define Vl   e | ö | a | o | E | Ö | A | O | â | Â | %^se | %^sö | %^sa | %^so;
+define Vfr  ö | ü | Ö | Ü | %^sFRV;
+define Vfu  e | i | E | İ | î | Î | %^sFUV;
+define Vbr  o | u | O | U | û | Û | %^sBRV;
+define Vbu  a | ı | A | I | â | Â | %^sBUV;
+define Vowel  Vf | Vb;
+define Vbuf %^%(I%) | %^%(A%);
+define Vpal %^pA | %^pI | %^pO | %^pU | %^pÂ | %^pÎ | %^pÔ |%^pÛ;
+define Vxx  %^A | %^I ;
+define Vsilent %^sFRV | %^sFUV | %^sBRV | %^sBUV ; 
+define Vall Vowel | Vxx | Vpal | Vsilent; ! except buffer vowels
+
+! Consonants
+define ConsV b | d | c | g | v | z | j | f | ğ | l | m | n | r | w | y | 
+           B | D | C | G | V | Z | J | F | Ğ | L | M | N | R | W | Y | %^sVC;
+define ConsUV p | t | ç | k | f | s | ş | h | 
+            P | T | Ç | K | F | S | Ş | H | %^sUC;
+define Cons  ConsV | ConsUV;
+define ConsBuf %^%(y%) | %^%(s%) | %^%(ş%) | %^%(n%);
+define ConsXX    %^c | %^p | %^t | %^k | %^g | %^K | %^D | %^C | %@LN ;
+define ConsSilent %^sVC |  %^sUC;
+define ConsAll  Cons | ConsXX |ConsSilent; ! except buffers
+
+! Intermediate symbols with no surface forms
+define Boundary %@MB | %@RB | %@dB ;
+define IntSym   Boundary | %@M | %@MREDUP | %@NCOMP | %@opt3 | %^NS | %^NNS;
+
+!
+! Buffer deletion
+!
+
+define NonBufCons [Cons | ConsXX ];
+define DelBufCons [ConsBuf -> 0 || [Cons | ConsXX] [IntSym]* _ ]
+                  .o. [ %^%(y%) -> y,, 
+                        %^%(s%) -> s,,
+                        %^%(ş%) -> ş,,
+                        %^%(n%) -> n 
+                      ];
+
+define DelBufVow [Vbuf -> 0 || [Vowel | Vxx ] [IntSym]* _ ] 
+             .o. [ %^%(I%) -> %^I ,,
+                   %^%(A%) -> %^A ] ;
+
+define DeleteBuffer DelBufCons .o. DelBufVow ;
+
+!
+! Vowel Harmony
+!
+! We also delete `palatalized' vowels at the end since they are
+! only used for vowel harmony.
+!
+
+define DelPV %^pA -> a , %^pI -> ı, %^pO -> o, %^pU -> u , 
+             %^pÂ -> â , %^pÎ -> î, %^pÔ -> ô, %^pÛ -> û;
+
+define VowelHarmony [ %^I -> ı  //  Vbu          \Vall* _  ,,
+                      %^I -> u  //  Vbr          \Vall* _  ,,
+                      %^I -> ü  //  [Vfr | %^pO | %^pU] \Vall* _  ,,
+                      %^I -> i  //  [Vfu | %^pA | %^pI] \Vall* _  ,,
+                      %^A -> a  //  Vb           \Vall* _  ,,
+                      %^A -> e  //  [Vf | Vpal]  \Vall* _  ]
+               .o. [ %^A -> e , %^I -> i ] ! defaults
+               .o. DelPV;
+
+!
+! Final stop devoicing
+!
+!
+! NOTE: reduplication should be done after this one.
+!
+
+define FSDevoicing  [%^c -> c,
+                     %^g -> ğ,
+                     %^K (->) ğ,
+                     %^K -> y,
+                     %^p -> b,
+                     %^t -> d ||    _ IntSym* [ Vowel | Vxx ]  ]
+                .o.  %^k -> ğ || \n _ IntSym* [ Vowel | Vxx ]
+                .o.  %^k -> g || n  _ IntSym* [ Vowel | Vxx ]
+                .o. [%^c -> ç,
+                     %^g -> g,
+                     %^K -> k,
+                     %^p -> p,
+                     %^t -> t,
+                     %^k -> k];
+
+
+!
+! Filter for cleaning up the intermediate symbols in the analysis level
+! we also deal with adding -sI to compound noun roots, since we use a
+! special notation in lexicon and leave the -(s)I out in lexical entries.
+! 
+!
+
+!
+! move the prefix percent after the number.
+! this feels more readable witho right-arrow rules.
+! we'll use the inverse of it
+!
+define percfilter [ [..] -> {<perc>} || .#. 
+                                      {<perc>}  
+                                      [%0|1|2|3|4|5|6|7|8|9|%.|%,]+
+                                      {<Num} \">"* %> _ ]
+                  .o. {<perc>} -> 0 || .#. _ ;
+
+
+define AFilter    FSDevoicing.i 
+              .o. VowelHarmony.i 
+              .o. DeleteBuffer.i
+              .o. %^%(s%) %^I  <- %@NCOMP
+              .o. 0 <- %@DEL%@ 
+              .o. 0 <- %@DELS%@ 
+              .o. 0 <- %@DUP%@
+              .o. 0 <- ˈ
+              .o. 0 <- %@dB
+              .o. 0 <- (ConsSilent|Vsilent)
+              .o. percfilter.i
+            ! Disallow derivational suffix -sI with stems ending with a vowel
+              .o. ~[?*] <- Vall {<N><si>} 
+              ;
+
+! A few analysis symbols may result from different surface forms.
+! In the morphological description, we keep theme saparate so that
+! they can be distinguished when needed. However, we do not want them
+! as different symbols in normal analysis strings, so we collapse them
+! here.
+! 
+define collapseAsymbols %: %0          -> 0 || %< p 3 p _ %>
+                    .o. %: %0          -> 0 || %< 3 p _ %>
+                    .o. %: %0          -> 0 || %< 3 s _ %>
+                    ;
+
+define DeleteBoundary ["@MB" | "@RB"] -> 0 ;
+
