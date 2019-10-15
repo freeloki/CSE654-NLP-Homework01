@@ -16020,16 +16020,7 @@ iskan                 N;
 Multichar_Symbols ^I
                   ^(s) ^(y)
                   @RB @MB
-                  @NCOMP  
-
-! LEXICON Root
-! #include "lexicon/noun"
-
-
-!LEXICON Ncomp ! this is only for lexicalized forms with compounding
-!@NCOMP%<N%>:^(s)^I@NCOMP@RB NcompCont;
-
-
+                  @NCOMP
 
 LEXICON N
 %<N%>:@RB       Ncont;

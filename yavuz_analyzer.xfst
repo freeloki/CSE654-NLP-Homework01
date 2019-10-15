@@ -1,4 +1,4 @@
-read lexc analyzer.yavuz.lexc
+read lexc analyzer.yavuz.short.lexc
 define Lexicon;
 
 source morph-phon-yavuz.xfst
@@ -7,8 +7,7 @@ source morph-phon-yavuz.xfst
 ! Put all of them together. The order is important. 
 !
 clear stack
-define analyzer  collapseAsymbols.i
-            .o. AFilter 
+define analyzer AFilter 
             .o. Lexicon 
             .o. DeleteBuffer
             .o. VowelHarmony 
@@ -19,4 +18,4 @@ define analyzer  collapseAsymbols.i
 regex analyzer 
     ;
 
-save stack yavuz.fst
+save stack yavuz.short.fst
