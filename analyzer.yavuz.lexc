@@ -16016,41 +16016,17 @@ iskan                 N;
 
 
 
-Multichar_Symbols ^A ^I ^K ^C ^c ^p ^k ^D ^t ^g ^G
-                  ^(A) ^(I) ^(s) ^(n) ^(y) ^(ş)
-                  ^pA ^pI ^pO ^pU ^pÂ ^pÔ ^pÛ ^pÎ
-                  @RB @MB @dB
-                  @APOS @ABBR
-                  @M @MREDUP
-                  @tSep @dSep
-                  @RomNum
-                  @NCOMP
-                  @PRN
-                  @DEL@ @DUP@ @DELS@
-                  @LN @LN2 @CAUS
-                  @miSPC @opt3
-                  ^NS ^NNS ^S
-                  ^sFUV ^sFRV ^sBUV ^sBRV ^sVC ^sUC
-!                   e,i   ü,ö   a,ı   o,u   
+Multichar_Symbols ^I
+                  ^(s) ^(y)
+                  @RB @MB
+                  @NCOMP  
 
 ! LEXICON Root
 ! #include "lexicon/noun"
 
 
-LEXICON Ncomp ! this is only for lexicalized forms with compounding
-@NCOMP%<N%>:^(s)^I@NCOMP@RB NcompCont;
-@NCOMP%<N%:mredup%>:^(s)^I@NCOMP@MREDUP@RB NcompCont;
-
-
-LEXICON NcompCont
-            ENDLEX;
-            NcompAposCont;
-
-LEXICON NcompAposCont
-                Ninfl;
-
-LEXICON Ninfl
-                Ncase;
+!LEXICON Ncomp ! this is only for lexicalized forms with compounding
+!@NCOMP%<N%>:^(s)^I@NCOMP@RB NcompCont;
 
 
 
@@ -16061,22 +16037,11 @@ LEXICON Ncont
     NcompCont; ! includes final
 
 
+LEXICON NcompCont
+            ENDLEX;
+            NCaseNoGen;
 
 LEXICON  NCaseNoGen
-%<acc%>:^(y)^I@MB   AccCaseCont;
-
-LEXICON  Ncase
-                    NCaseNoGen;                    
-
-LEXICON Case1Cont
-            ENDLEX;
-
-!
-! Normally, predicative use after accusative is almost an
-! impossibility, but some forms exist: `renginiyse Ali seçmiş', 
-!
-LEXICON AccCaseCont
-             Case1Cont;
-!            ENDLEX;
+%<acc%>:^(y)^I@MB   ENDLEX;
 
 LEXICON ENDLEX #;
