@@ -11739,6 +11739,7 @@ rüyet                 N;
 rüzgâr                N;
 ruz                   N;
 ruzname               N;
+sa^at                  N;
 saadethane            N;
 saadet                N;
 sabahçı               N;
@@ -16043,5 +16044,6 @@ LEXICON NcompCont
 
 LEXICON  NCaseNoGen
 %<acc%>:^(y)^I@MB   ENDLEX;
+%<dat%>:^(y)^A@MB   ENDLEX;
 
 LEXICON ENDLEX #;
